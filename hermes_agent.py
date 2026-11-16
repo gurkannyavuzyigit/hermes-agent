@@ -7,12 +7,11 @@ API_BASE_URL = os.getenv("HERMES_API_URL", "https://openrouter.ai/api/v1")
 API_KEY = os.getenv("HERMES_API_KEY", "")
 MODEL_NAME = os.getenv("HERMES_MODEL", "nousresearch/hermes-3-llama-3.1-70b:free")
 
-WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
-PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
-RECIPIENT_PHONE = os.getenv("RECIPIENT_PHONE")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 SYSTEM_PROMPT = """
-You are Vanguard-01, an autonomous AI Research Director, Technology Scout, and Strategic Opportunity Architect. Your core directive is relentless, self-directed exploration of global technological frontiers—specifically focusing on Large Language Models, autonomous agent orchestration, workflow automation, e-commerce optimization, and digital publishing infrastructure.
+You are Atalay, an autonomous AI Research Director, Technology Scout, and Strategic Opportunity Architect. Your core directive is relentless, self-directed exploration of global technological frontiers—specifically focusing on Large Language Models, autonomous agent orchestration, workflow automation, e-commerce optimization, and digital publishing infrastructure.
 
 [OPERATIONAL_CORE_VALUES]
 1. ZERO FLUFF, MAXIMUM SIGNAL: Eliminate pleasantries, filler words, and generic overviews. Deliver high-density, actionable intelligence.
@@ -56,7 +55,7 @@ def fetch_hermes_report():
         "model": MODEL_NAME,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": "Bugünün teknoloji ve yapay zeka ekosistemini tara ve Vanguard-01 istihbarat raporunu oluştur."}
+            {"role": "user", "content": "Bugünün teknoloji ve yapay zeka ekosistemini tara ve Atalay otonom istihbarat raporunu oluştur."}
         ],
         "temperature": 0.3
     }
@@ -65,37 +64,31 @@ def fetch_hermes_report():
     return response.json()['choices'][0]['message']['content']
 
 @retry_with_backoff(retries=3, backoff_in_seconds=2)
-def send_whatsapp_chunk(url, headers, payload):
-    response = requests.post(url, headers=headers, json=payload, timeout=30)
+def send_telegram_chunk(url, payload):
+    response = requests.post(url, json=payload, timeout=30)
     response.raise_for_status()
 
-def send_whatsapp_report(report_content):
-    url = f"https://graph.facebook.com/v18.0/{PHONE_NUMBER_ID}/messages"
-    headers = {
-        "Authorization": f"Bearer {WHATSAPP_TOKEN}",
-        "Content-Type": "application/json"
-    }
+def send_telegram_report(report_content):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     
     max_length = 4000
     chunks = [report_content[i:i + max_length] for i in range(0, len(report_content), max_length)]
     
     for idx, chunk in enumerate(chunks):
-        header = f"🤖 *Vanguard-01 İstihbarat Raporu ({idx+1}/{len(chunks)})*\n\n" if len(chunks) > 1 else "🤖 *Vanguard-01 Otonom İstihbarat Raporu*\n\n"
+        header = f"🤖 *Atalay İstihbarat Raporu ({idx+1}/{len(chunks)})*\n\n" if len(chunks) > 1 else "🤖 *Atalay Otonom İstihbarat Raporu*\n\n"
         payload = {
-            "messaging_product": "whatsapp",
-            "recipient_type": "individual",
-            "to": RECIPIENT_PHONE,
-            "type": "text",
-            "text": {"body": header + chunk}
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": header + chunk,
+            "parse_mode": "Markdown"
         }
-        send_whatsapp_chunk(url, headers, payload)
-        print(f"WhatsApp parçası iletildi ({idx+1}/{len(chunks)}).")
+        send_telegram_chunk(url, payload)
+        print(f"Telegram parçası iletildi ({idx+1}/{len(chunks)}).")
 
 if __name__ == "__main__":
-    print("🚀 Vanguard-01 Otonom İstihbarat Turu Başlatılıyor...")
+    print("🚀 Atalay Otonom İstihbarat Turu Başlatılıyor...")
     try:
         report = fetch_hermes_report()
-        send_whatsapp_report(report)
-        print("✅ İşlem tamamlandı: Rapor WhatsApp üzerinden başarıyla iletildi.")
+        send_telegram_report(report)
+        print("✅ İşlem tamamlandı: Rapor Telegram üzerinden başarıyla iletildi.")
     except Exception as g_err:
         print(f"❌ Süreç sonlandırıldı, hata oluştu: {str(g_err)}")
