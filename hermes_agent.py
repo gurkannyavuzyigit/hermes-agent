@@ -3,9 +3,9 @@ import random
 import time
 import requests
 
-API_BASE_URL = os.getenv("HERMES_API_URL", "http://localhost:11434/v1")
-API_KEY = os.getenv("HERMES_API_KEY", "gizli_api_anahtari")
-MODEL_NAME = os.getenv("HERMES_MODEL", "hermes3")
+API_BASE_URL = os.getenv("HERMES_API_URL", "https://openrouter.ai/api/v1")
+API_KEY = os.getenv("HERMES_API_KEY", "")
+MODEL_NAME = os.getenv("HERMES_MODEL", "nousresearch/hermes-3-llama-3.1-70b:free")
 
 WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID")
